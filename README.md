@@ -1,9 +1,10 @@
 FinOps Autopilot
+
 Agentic Financial Reconciliation & Exception Resolution Platform
 
 FinOps Autopilot is an intelligent financial operations platform designed to automate payment reconciliation, detect settlement exceptions, identify anomalous transactions using machine learning, and assist with exception resolution.
 
-🚀 Features
+Features
 Payment reconciliation
 Settlement matching
 Missing settlement detection
@@ -17,97 +18,90 @@ Exception management
 Payment Operations monitoring
 PostgreSQL persistence
 Automated dashboard refresh
-🏗️ System Architecture
-                    ┌──────────────────────┐
-                    │    React Dashboard   │
-                    │     Vite + Axios     │
-                    │    localhost:5173    │
-                    └───────────┬──────────┘
-                                │
-                                ▼
-                    ┌──────────────────────┐
-                    │       FastAPI        │
-                    │     Backend API      │
-                    │    localhost:8000    │
-                    └───────────┬──────────┘
-                                │
-               ┌────────────────┼─────────────────┐
-               │                │                 │
-               ▼                ▼                 ▼
-       ┌──────────────┐ ┌──────────────┐ ┌─────────────────┐
-       │Reconciliation│ │ ML Detection │ │Resolution Agent │
-       │   Service    │ │ Scikit-learn │ │    Workflow     │
-       └──────┬───────┘ └──────┬───────┘ └───────┬─────────┘
-              │                │                 │
-              └────────────────┼─────────────────┘
-                               │
-                               ▼
-                    ┌──────────────────────┐
-                    │      PostgreSQL      │
-                    │       finops DB      │
-                    └──────────────────────┘
+Tech Stack
+Frontend
+React
+Vite
+Axios
+Backend
+Python
+FastAPI
+Uvicorn
+Database
+PostgreSQL
+SQLAlchemy
+Psycopg2
+Machine Learning
+Scikit-learn
+System Architecture
+React Dashboard
+      │
+      ▼
+FastAPI Backend
+      │
+      ├───────────────┬────────────────┐
+      ▼               ▼                ▼
+Reconciliation   ML Detection   Resolution Agent
+      │               │                │
+      └───────────────┼────────────────┘
+                      ▼
+                 PostgreSQL
+                    finops
 
-🔄 How It Works
-Payment Data
-     │
-     ▼
-Reconciliation
-     │
-     ├──────── Match ──────────────► Successful
-     │
-     └──────── Mismatch/Missing
-                    │
-                    ▼
-           Exception Detection
-                    │
-                    ▼
-          Severity Classification
-                    │
-                    ▼
-           ML Anomaly Detection
-                    │
-                    ▼
-             Resolution Agent
-                    │
-                    ▼
-             Dashboard Update
-
-🧠 Core Components
+Core Components
 Payment Reconciliation
 
-Compares payment records against settlement records and identifies whether transactions are successfully reconciled.
+Compares payment records with settlement records and determines whether transactions are successfully reconciled.
 
-Exception Detection
+The reconciliation service identifies:
 
-Detects financial exceptions including:
-
+Successful matches
 Missing settlements
 Settlement mismatches
 Amount differences
-High-value discrepancies
+Exception Detection
+
+Financial exceptions are automatically created when a payment cannot be successfully reconciled.
+
+Supported exception types include:
+
+MISSING_SETTLEMENT
+SETTLEMENT_MISMATCH
 Severity Classification
 
-Exceptions are automatically classified into:
+Detected exceptions are classified according to severity:
 
 CRITICAL
 HIGH
 MEDIUM
+Bulk Reconciliation
+
+The platform supports reconciliation of all available payment records through a single API operation.
+
+POST /reconcile-all
+
 ML Anomaly Detection
 
-Uses Scikit-learn to identify unusual payment activity based on transaction and settlement-related features.
+The ML service uses Scikit-learn to identify unusual payment activity.
 
-The ML service produces an anomaly score and prediction for each payment.
+Each payment receives:
 
-Prediction: -1 → Anomaly
-Prediction:  1 → Normal
+Anomaly Score
+Prediction
+
+
+Prediction values:
+
+-1 → Anomaly
+ 1 → Normal
 
 Resolution Agent
 
-The Resolution Agent processes detected exceptions and updates their operational status.
+The Resolution Agent processes detected financial exceptions and updates their operational status.
 
-Users can trigger exception resolution directly from the dashboard.
+OPEN exceptions can be processed directly from the React dashboard.
 
-📊 Demo Data
+Demo Data
 
 The current development environment contains:
 
@@ -115,8 +109,8 @@ Metric	Value
 Payments	20
 Settlements	1
 Exceptions	20
-Settlement Mismatch	PAY_000001
 Missing Settlements	19
+Settlement Mismatch	PAY_000001
 ML Anomaly Detection	Enabled
 Resolution Agent	Enabled
 Example Exception
@@ -127,22 +121,11 @@ Difference:       20.00 EUR
 Exception Type:   SETTLEMENT_MISMATCH
 Severity:         HIGH
 
-🛠️ Technology Stack
-Layer	Technology
-Frontend	React
-Build Tool	Vite
-HTTP Client	Axios
-Backend	FastAPI
-Language	Python
-ORM	SQLAlchemy
-Database	PostgreSQL
-Database Driver	Psycopg2
-Machine Learning	Scikit-learn
-Runtime	Python + Node.js
-📁 Project Structure
+Project Structure
 finops-autopilot/
 │
 ├── backend/
+│   │
 │   ├── app/
 │   │   ├── agents/
 │   │   │   └── resolution_agent.py
@@ -174,6 +157,7 @@ finops-autopilot/
 │   └── requirements.txt
 │
 ├── frontend/
+│   │
 │   ├── src/
 │   │   ├── App.jsx
 │   │   ├── App.css
@@ -184,40 +168,253 @@ finops-autopilot/
 │
 └── README.md
 
-⚙️ Backend Setup
+Database Design
+Customers
 
-Open a terminal and navigate to the backend:
+Stores customer information associated with payment transactions.
+
+Merchants
+
+Stores merchant information associated with financial transactions.
+
+Payments
+
+Stores payment transaction information including:
+
+payment_id
+customer_id
+merchant_id
+amount
+currency
+status
+processor
+created_at
+
+Settlements
+
+Stores settlement information used for payment reconciliation.
+
+Exceptions
+
+Stores detected reconciliation exceptions including:
+
+exception_id
+payment_id
+exception_type
+severity
+expected_amount
+actual_amount
+difference
+status
+created_at
+
+API Endpoints
+Health Check
+GET
+/health
+
+
+Checks backend and database connectivity.
+
+Example response:
+
+{
+  "status": "healthy",
+  "database": "connected"
+}
+
+Dashboard API
+Dashboard Summary
+GET
+/dashboard/summary
+
+
+Returns:
+
+Total payments
+Settlement count
+Total exceptions
+Open exceptions
+Critical exceptions
+High exceptions
+Medium exceptions
+Exceptions in review
+Exceptions
+GET
+/dashboard/exceptions
+
+
+Returns all detected financial exceptions.
+
+Payment API
+Payments
+GET
+/payments
+
+
+Returns processed payment records used by the Payment Operations dashboard.
+
+Reconciliation API
+Reconcile Payment
+POST
+/reconcile/{payment_id}
+
+
+Reconciles an individual payment against its settlement.
+
+Reconcile All Payments
+POST
+/reconcile-all
+
+
+Runs reconciliation across all available payments.
+
+Machine Learning API
+Detect Anomalies
+GET
+/ml/anomalies
+
+
+Runs ML-based anomaly detection against payment data.
+
+Example prediction:
+
+PAY_000001 → Anomaly
+PAY_000002 → Normal
+
+Resolution Agent API
+Resolve Exception
+POST
+/exceptions/{exception_id}/resolve
+
+
+Processes a financial exception through the Resolution Agent.
+
+Example:
+
+POST /exceptions/EXC_PAY_000020/resolve
+
+
+The dashboard automatically refreshes after resolution.
+
+End-to-End Workflow
+Payment Data
+     │
+     ▼
+Reconciliation
+     │
+     ├── Match
+     │     │
+     │     ▼
+     │  Successful
+     │
+     └── Mismatch / Missing
+              │
+              ▼
+       Exception Detection
+              │
+              ▼
+      Severity Classification
+              │
+              ▼
+       ML Anomaly Detection
+              │
+              ▼
+        Resolution Agent
+              │
+              ▼
+       Dashboard Update
+
+React Dashboard
+
+The React dashboard provides an operational interface for monitoring financial reconciliation.
+
+Dashboard Features
+System health status
+Total payment monitoring
+Settlement monitoring
+Exception monitoring
+Open exception count
+Exception severity overview
+Payment Operations table
+ML anomaly detection
+Bulk reconciliation
+Exception resolution
+Dashboard refresh
+
+The dashboard communicates with the FastAPI backend using Axios.
+
+Backend Setup
+Clone Repository
+git clone https://github.com/Mantu-231/finops-autopilot.git
+
+
+Move into the project:
+
+cd finops-autopilot
+
+Create Virtual Environment
+
+Navigate to the backend:
 
 cd backend
 
 
-Activate the virtual environment:
+Create virtual environment:
+
+python -m venv venv
+
+
+Activate on Windows:
 
 venv\Scripts\activate
 
+Install Backend Dependencies
+pip install -r requirements.txt
 
-Start the FastAPI server:
+Configure PostgreSQL
+
+Create a PostgreSQL database named:
+
+finops
+
+
+Configure the database connection in the backend database configuration.
+
+Make sure PostgreSQL is running before starting the application.
+
+Run Backend
+
+From the backend directory:
 
 uvicorn app.main:app --reload
 
 
-Backend:
+Backend URL:
 
 http://127.0.0.1:8000
 
+API Documentation
 
-API documentation:
+FastAPI Swagger UI:
 
 http://127.0.0.1:8000/docs
+
+
+OpenAPI specification:
+
+http://127.0.0.1:8000/openapi.json
 
 
 Health check:
 
 http://127.0.0.1:8000/health
 
-💻 Frontend Setup
+Frontend Setup
 
-Open a second terminal and navigate to the frontend:
+Open a second terminal.
+
+Navigate to the frontend:
 
 cd frontend
 
@@ -227,125 +424,31 @@ Install dependencies:
 npm install
 
 
-Start the development server:
+Start the Vite development server:
 
 npm run dev
 
 
-Frontend:
+Frontend URL:
 
 http://localhost:5173
 
-🔌 API Endpoints
-Health Check
-GET /health
+Running the Complete Application
+Terminal 1 — Backend
+cd backend
+venv\Scripts\activate
+uvicorn app.main:app --reload
+
+Terminal 2 — Frontend
+cd frontend
+npm run dev
 
 
-Checks database connectivity.
+Open the dashboard:
 
-Dashboard Summary
-GET /dashboard/summary
+http://localhost:5173
 
-
-Returns payment, settlement, exception and operational status statistics.
-
-Exceptions
-GET /dashboard/exceptions
-
-
-Returns detected financial exceptions.
-
-Payments
-GET /payments
-
-
-Returns processed payment records used by the Payment Operations dashboard.
-
-Reconcile Payment
-POST /reconcile/{payment_id}
-
-
-Reconciles an individual payment against its settlement.
-
-Reconcile All
-POST /reconcile-all
-
-
-Runs reconciliation across all payments.
-
-ML Anomalies
-GET /ml/anomalies
-
-
-Runs anomaly detection against payment data.
-
-Resolve Exception
-POST /exceptions/{exception_id}/resolve
-
-
-Processes an exception through the Resolution Agent.
-
-🔁 End-to-End Workflow
-Payment Transaction
-        │
-        ▼
-Payment Reconciliation
-        │
-        ├── Match
-        │     │
-        │     ▼
-        │  Successful
-        │
-        └── Mismatch / Missing Settlement
-                    │
-                    ▼
-            Exception Detection
-                    │
-                    ▼
-           Severity Classification
-                    │
-                    ▼
-            ML Anomaly Detection
-                    │
-                    ▼
-             Resolution Agent
-                    │
-                    ▼
-              Status Update
-                    │
-                    ▼
-             React Dashboard
-
-🤖 Automation
-
-FinOps Autopilot automates the following operational workflow:
-
-✓ Payment Reconciliation
-✓ Settlement Exception Detection
-✓ Severity Classification
-✓ ML Anomaly Detection
-✓ Exception Resolution
-✓ Dashboard Monitoring
-
-📈 Dashboard
-
-The React dashboard provides visibility into:
-
-Total payments
-Settlement count
-Total exceptions
-Open exceptions
-Critical exceptions
-High-severity exceptions
-Medium-severity exceptions
-Exceptions currently in review
-Payment Operations
-ML anomaly detection results
-Exception resolution status
-
-OPEN exceptions can be processed directly through the Resolution Agent.
-
-🧪 Current Project Status
+Project Status
 MVP Complete
 PostgreSQL database
 SQLAlchemy models
@@ -361,32 +464,27 @@ React dashboard
 Exception management
 Payment Operations dashboard
 Automated dashboard refresh
-CORS-enabled frontend/backend integration
-▶️ Run the Complete Application
-Terminal 1 — Backend
-cd backend
-venv\Scripts\activate
-uvicorn app.main:app --reload
-
-Terminal 2 — Frontend
-cd frontend
-npm run dev
-
-
-Then open:
-
-http://localhost:5173
-
-🎯 Purpose
+CORS integration
+Future Improvements
+Authentication and role-based access
+Advanced exception prioritization
+Automated settlement ingestion
+Processor-level analytics
+Historical reconciliation reports
+Advanced anomaly detection models
+Email and notification integration
+Docker deployment
+Cloud deployment
+Production monitoring and logging
+Purpose
 
 FinOps Autopilot is designed as an internal financial operations platform for teams that need to monitor payment transactions, reconcile settlements, identify financial exceptions, detect anomalous activity, and streamline exception handling.
 
-The platform combines traditional financial reconciliation workflows with machine learning and agent-assisted operations to reduce manual investigation and improve operational visibility.
+The platform combines automated reconciliation, machine learning, and agent-assisted workflows to reduce manual financial operations and provide real-time operational visibility.
 
-👨‍💻 Project
+Author
+
+Mantu Kumar
 
 FinOps Autopilot
-
 Agentic Financial Reconciliation & Exception Resolution Platform
-
-Status: MVP Complete
